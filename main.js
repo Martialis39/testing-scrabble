@@ -1,3 +1,20 @@
+// TODO or ideas on where to continue (by Reimo).
+//
+// Scoring:
+// * Get new words on board, after a valid move
+// * For each word, calculate how many points it is worth
+// * Each tile has an associated score value
+//
+// Game loop:
+// * Tiles (a global pool of tiles, players can take new tiles from pool)
+// * Players (each player has a score, each player has a set of tiles to place
+//   on board)
+// * Turns (players can't move simultaneously, players can move one
+//   after another)
+// * Game start (resetting game state)
+// * Game end (game ends when a) no more valid moves, b) out of tiles, c) no
+//   player has made a valid move for 3 turns (not sure about the last one))
+
 const DICTIONARY = [
   "ADD",
   "RUN",
@@ -35,36 +52,81 @@ export const newBoard = (size) => {
   return Array(size).fill(Array(size).fill(''))
 }
 
-export const checkDictionary = (input, dictionary) => {
+export const checkWordInDictionary = (input, dictionary) => {
   return dictionary.map(e => e.toLowerCase()).includes(input.toLowerCase())
 }
 
-// []
+export const checkWordsInDictionary = (words, dictionary) => {
+  for (let i = 0; i < words.length; i++) {
+    if (!checkWordInDictionary(words[i], dictionary)) {
+      return false
+    }
+  }
 
-export const parseBoard = (board, dictionary) => {
+  return true
+}
+
+export const parseBoard = (board) => {
   console.warn('DEBUG:: board is ', board);
   let words = [];
-  for (let i = 0; i < board.length; i++) {
-    for (let j = 0; j < board.length; j++) {
-      if(board[i][j] !== ''){
-        // Check if on edge OR if prevous element is empty
-        if(j === 0 || board[i][j-1] === ''){
-          if(j < board.length - 1 && board[i][j + 1] !== ''){
+  for (let rowIdx = 0; rowIdx < board.length; rowIdx++) {
+    for (let columnIdx = 0; columnIdx < board.length; columnIdx++) {
+      if (board[rowIdx][columnIdx] !== '') {
+        // Check if on row edge OR if previous element is empty
+        if (columnIdx === 0 || board[rowIdx][columnIdx - 1] === '') {
+          if (columnIdx < board.length - 1 && board[rowIdx][columnIdx + 1] !== '') {
             // We have the beginning of a new word
-            let word = board[i][j];
-            // Lets keep going until we find an empty tile or the edge
-            for (let k = j + 1; k < board.length; k++) {
-              if(board[i][k] !== ''){
-                word = word.concat(board[i][k])
-              } else {
-                break
-              }
-            }
-            words.push(word)
+            const newWord = extractWordInRow(board, rowIdx, columnIdx)
+            words.push(newWord)
+          }
+        }
+
+        // Check if on column edge OR if previous element is empty
+        if (rowIdx === 0 || board[rowIdx - 1][columnIdx] === '') {
+          if (rowIdx < board.length - 1 && board[rowIdx + 1][columnIdx] !== '') {
+            // We have the beginning of a new word
+            const newWord = extractWordInColumn(board, columnIdx, rowIdx)
+            words.push(newWord)
           }
         }
       }
     }
   }
   return words
+}
+
+export const checkMove = (board, dictionary) => {
+  const wordsOnBoard = parseBoard(board)
+
+  if (wordsOnBoard.length == 0) {
+    return false
+  }
+
+  return checkWordsInDictionary(wordsOnBoard, dictionary)
+}
+
+const extractWordInRow = (board, rowIdx, startIdx) => {
+  let word = board[rowIdx][startIdx];
+  // Lets keep going until we find an empty tile or the edge
+  for (let k = startIdx + 1; k < board.length; k++) {
+    if (board[rowIdx][k] !== '') {
+      word = word.concat(board[rowIdx][k])
+    } else {
+      break
+    }
+  }
+  return word
+}
+
+const extractWordInColumn = (board, columnIdx, startIdx) => {
+  let word = board[startIdx][columnIdx];
+  // Lets keep going until we find an empty tile or the edge
+  for (let k = startIdx + 1; k < board.length; k++) {
+    if (board[k][columnIdx] !== '') {
+      word = word.concat(board[k][columnIdx])
+    } else {
+      break
+    }
+  }
+  return word
 }
