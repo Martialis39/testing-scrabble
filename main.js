@@ -1,19 +1,3 @@
-// TODO or ideas on where to continue (by Reimo).
-//
-// Scoring:
-// * Get new words on board, after a valid move
-// * For each word, calculate how many points it is worth
-// * Each tile has an associated score value
-//
-// Game loop:
-// * Tiles (a global pool of tiles, players can take new tiles from pool)
-// * Players (each player has a score, each player has a set of tiles to place
-//   on board)
-// * Turns (players can't move simultaneously, players can move one
-//   after another)
-// * Game start (resetting game state)
-// * Game end (game ends when a) no more valid moves, b) out of tiles, c) no
-//   player has made a valid move for 3 turns (not sure about the last one))
 
 const DICTIONARY = [
   "ADD",
@@ -58,7 +42,7 @@ export const checkWordInDictionary = (input, dictionary) => {
 
 export const checkWordsInDictionary = (words, dictionary) => {
   for (let i = 0; i < words.length; i++) {
-    if (!checkWordInDictionary(words[i], dictionary)) {
+    if (!checkWordInDictionary(words[i].word, dictionary)) {
       return false
     }
   }
@@ -77,7 +61,7 @@ export const parseBoard = (board) => {
           if (columnIdx < board.length - 1 && board[rowIdx][columnIdx + 1] !== '') {
             // We have the beginning of a new word
             const newWord = extractWordInRow(board, rowIdx, columnIdx)
-            words.push(newWord)
+            words.push({word: newWord, start: {x: columnIdx, y: rowIdx }, direction: 'horizontal'})
           }
         }
 
@@ -86,7 +70,7 @@ export const parseBoard = (board) => {
           if (rowIdx < board.length - 1 && board[rowIdx + 1][columnIdx] !== '') {
             // We have the beginning of a new word
             const newWord = extractWordInColumn(board, columnIdx, rowIdx)
-            words.push(newWord)
+            words.push({word: newWord, start: {x: columnIdx, y: rowIdx }, direction: 'vertical'})
           }
         }
       }
@@ -130,3 +114,12 @@ const extractWordInColumn = (board, columnIdx, startIdx) => {
   }
   return word
 }
+
+export const scoreWord = (word, letterValues) => {
+  let result = 0;
+  for(let letter of word){
+    result += letterValues[letter.toLowerCase()]
+  }
+  return result;
+}
+
