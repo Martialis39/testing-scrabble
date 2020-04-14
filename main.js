@@ -79,6 +79,17 @@ export const parseBoard = (board) => {
   return words
 }
 
+export const formatWord = (word, startX, startY, direction) => {
+  return {
+    word,
+    direction,
+    start: {
+      x: startX,
+      y: startY
+    }
+  }
+}
+
 export const checkMove = (board, dictionary) => {
   const wordsOnBoard = parseBoard(board)
 
@@ -121,5 +132,27 @@ export const scoreWord = (word, letterValues) => {
     result += letterValues[letter.toLowerCase()]
   }
   return result;
+}
+
+export const scoreBoard = (words, letterMultipliers, wordMultipliers, letterValues) => {
+  return words.reduce((score, {word, start, direction}) => {
+    let currentX = start.x;
+    let currentY = start.y;
+    const wordMultipliersToApply = []
+    const wordScore = Array.from(word).reduce((sumOfLetters, letter, index) => {
+      let baseValue = letterValues[letter]
+      if (direction === 'horizontal') {
+        currentX += index
+      } else if (direction === 'vertical') {
+        currentY += index
+      }
+      const letterMultiplier = letterMultipliers[`${currentX}:${currentY}`]
+      if (letterMultiplier) {
+        baseValue *= letterMultiplier
+      }
+      return sumOfLetters += baseValue;
+    }, 0)
+    return score += wordScore
+  }, 0)
 }
 
