@@ -2,7 +2,7 @@ const chai = require("chai")
 const sinon = require("sinon")
 const expect = chai.expect;
 
-import { newBoard, checkWordInDictionary, checkMove, parseBoard, scoreWord } from '../main'
+import { newBoard, checkWordInDictionary, checkMove, parseBoard, scoreWord, formatWord, scoreBoard } from '../main'
 
 describe("newBoard function", function(){
   describe("returns board", function(){
@@ -56,18 +56,25 @@ describe("parseBoard function", function(){
     ]
     expect(parseBoard(board, dictionary)).to.deep.equal([{word: 'RED', start: {x: 0, y: 0}, direction: 'horizontal' }, {word: 'OK', start: {x: 4, y: 1}, direction: 'horizontal' }]);
   })
-//  it('should return all words in the columns', function(){
-//    const dictionary = ['red', 'ok']
-//    const board = [
-//      ['R', '', '', '', '', ''],
-//      ['E', '', '', '', '', ''],
-//      ['D', '', '', '', '', ''],
-//      ['', '', '', '', '', ''],
-//      ['', 'O', '', '', '', ''],
-//      ['', 'K', '', '', '', ''],
-//    ]
-//    expect(parseBoard(board, dictionary)).to.deep.equal(['RED', 'OK']);
-//  })
+ it('should return all words in the columns', function(){
+   const dictionary = ['red', 'ok']
+   const board = [
+     ['R', '', '', '', '', ''],
+     ['E', '', '', '', '', ''],
+     ['D', '', '', '', '', ''],
+     ['', '', '', '', '', ''],
+     ['', 'O', '', '', '', ''],
+     ['', 'K', '', '', '', ''],
+   ]
+   const startingPositions = [
+     {x: 0, y: 0},
+     {x: 1, y: 4}
+   ]
+   const result = ['RED', 'OK'].map((word, index) => {
+    return formatWord(word, startingPositions[index].x, startingPositions[index].y, 'vertical')
+   })
+   expect(parseBoard(board, dictionary)).to.deep.equal(result);
+ })
 //  it('should return all words in the columns', function(){
 //    const dictionary = ['red', 'ok']
 //    const board = [
@@ -156,5 +163,41 @@ describe("checkMove function", function(){
       ['', '', '', '', '', ''],
     ]
     expect(checkMove(board, dictionary)).to.deep.equal(false);
+  })
+})
+
+describe('formatWord', function() {
+  it('return an object with correct format', function() {
+    const word = 'red'
+    const startX = 1
+    const startY = 1
+    const direction = 'vertical'
+    expect(formatWord(word, startX, startY, direction)).to.deep.equal({
+      word,
+      direction,
+      start: {
+        x: startX,
+        y: startY
+      }
+    })
+  })
+})
+
+describe('scoreBoard', function() {
+  it('returns the total score of all the words on the board', function() {
+    const letterValues = {
+      'R': 1,
+      'E': 2,
+      'D': 3
+    }
+    const words = [{word: 'RED', start: {x: 0, y: 0}, direction: 'horizontal'}]
+    const letterMultipliers = {
+      '0:0': 3,
+    }
+    const wordMultipliers = {
+      '0:0': 2
+    }
+
+    expect(scoreBoard(words, letterMultipliers, wordMultipliers, letterValues)).to.deep.equal(16)
   })
 })
