@@ -2,7 +2,7 @@ const chai = require("chai")
 const sinon = require("sinon")
 const expect = chai.expect;
 
-import { newBoard, checkWordInDictionary, checkMove, parseBoard, scoreWord, formatWord, scoreBoard } from '../main'
+import { newBoard, checkWordInDictionary, checkMove, parseBoard, scoreWord, formatWord, scoreBoard, addLetters } from '../main'
 
 describe("newBoard function", function(){
   describe("returns board", function(){
@@ -200,4 +200,94 @@ describe('scoreBoard', function() {
 
     expect(scoreBoard(words, letterMultipliers, wordMultipliers, letterValues)).to.deep.equal(16)
   })
+})
+
+// describe('makeMove', function(){
+//   it('takes in current state and returns the result of the move', function(){
+//     const gameState = {
+//       letterValues: {
+//         'R': 1,
+//         'E': 2,
+//         'D': 3
+//       },
+//       words: [{word: 'RED', start: {x: 0, y: 0}, direction: 'horizontal'}],
+//       letterMultipliers: {
+//         '0:0': 3,
+//       },
+//       wordMultipliers: {
+//         '0:0': 2
+//       }
+//     }
+//   })
+// })
+describe('addLetters', function(){
+  it('adds all provided letters to their places on the board', function(){
+    const board = [
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ]
+    const word = formatWord('RUN', 0, 0, 'vertical');
+    const newBoard = [
+      ['R', '', '', '', '', ''],
+      ['U', '', '', '', '', ''],
+      ['N', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ];
+    
+    expect(addLetters(word, board)).to.deep.equal(newBoard)
+  })
+  it('reuses letters that are already on board', function(){
+    const board = [
+      ['R', '', '', '', '', ''],
+      ['U', '', '', '', '', ''],
+      ['N', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ]
+    const word = formatWord('NUN', 0, 2, 'horizontal');
+    const newBoard = [
+      ['R', '', '', '', '', ''],
+      ['U', '', '', '', '', ''],
+      ['N', 'U', 'N', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ];
+    expect(addLetters(word, board)).to.equal(newBoard)
+  })
+  it('returns false if place on board is occupied by different letter', function(){
+    const board = [
+      ['R', '', '', '', '', ''],
+      ['U', '', '', '', '', ''],
+      ['N', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ]
+    const word = formatWord('EGG', 0, 0, 'vertical');
+    const result = false;
+    expect(addLetters(word, board)).to.equal(result)
+  })
+
+  it('returns false if letter is too long for current position', function(){
+    const board = [
+      ['R', '', '', '', '', ''],
+      ['U', '', '', '', '', ''],
+      ['N', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+      ['', '', '', '', '', ''],
+    ]
+    const word = formatWord('RAMBUNCTIOUS', 0, 0, 'horizontal');
+    const result = false;
+    expect(addLetters(word, board)).to.equal(result)
+  })
+
 })
