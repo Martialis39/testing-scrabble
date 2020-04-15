@@ -138,7 +138,7 @@ export const scoreBoard = (words, letterMultipliers, wordMultipliers, letterValu
   return words.reduce((score, {word, start, direction}) => {
     let currentX = start.x;
     let currentY = start.y;
-    const wordMultipliersToApply = []
+    let wordMultipliersToApply = 1; 
     const wordScore = Array.from(word).reduce((sumOfLetters, letter, index) => {
       let baseValue = letterValues[letter]
       if (direction === 'horizontal') {
@@ -147,12 +147,53 @@ export const scoreBoard = (words, letterMultipliers, wordMultipliers, letterValu
         currentY += index
       }
       const letterMultiplier = letterMultipliers[`${currentX}:${currentY}`]
+      const wordMultiplier = wordMultipliers[`${currentX}:${currentY}`]
       if (letterMultiplier) {
         baseValue *= letterMultiplier
       }
+      if (wordMultiplier) {
+        wordMultipliersToApply *= wordMultiplier
+      }
       return sumOfLetters += baseValue;
     }, 0)
-    return score += wordScore
+    return score += wordScore * wordMultipliersToApply
   }, 0)
 }
 
+const checkCoordinateOnBoard = (coordinate, boardLength) => {
+  if(coordinate.x < 0 || coordinate.y < 0){
+    return false
+  }
+  if(coordinate.x > boardLength || coordinate.y > boardLength){
+    return false
+  }
+  return true;
+}
+
+const getEndOfWordCoordinate = (word, start, direction) => {
+  if(direction === 'horizontal'){
+    return {x: start.x + word.length, y: start.y}
+  } else {
+    return {x: start.x, y: start.y + word.length}
+  }
+} 
+
+export const addLetters = ({word, start, direction}, board) => {
+  const startingTile = direction == 'horizontal' ? start.x : start.x  
+  if (!checkCoordinateOnBoard(start, board[0].length) ||!checkCoordinateOnBoard(getEndOfWordCoordinate(word, start, direction), board[0].length)){
+    return false
+  }
+
+  const newBoard = JSON.parse(JSON.stringify(board));
+
+  if(direction === 'horizontal'){
+    for(let i = 0; i < word.length; i++){
+      newBoard[start.y][start.x + i] = word[i]
+    }
+  } else {
+    for(let i = 0; i < word.length; i++){
+      newBoard[start.y + i][start.x] = word[i]
+    }
+  }
+  return newBoard
+}
